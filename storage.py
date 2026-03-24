@@ -271,9 +271,11 @@ class GymTracker:
             with open("exercise_database.json", "r") as f:
                 return json.load(f)
         except FileNotFoundError:
-            output+="database not found"   
-            return{}
-        return output
+            data = {"exercises" : []}
+            with open ("exercise_database.json", "w ") as file:
+                json.dump(data, file, indent=4) 
+            
+            return data
 
     def get_muscle_group(self, exercise_name):
         for muscle, exercises in self.exercise_db.items():
