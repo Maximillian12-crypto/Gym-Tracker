@@ -1,0 +1,64 @@
+{
+  "chest": [
+    "Bench Press",
+    "Incline Bench Press",
+    "Decline Bench Press",
+    "Dumbbell Bench Press",
+    "Chest Fly",
+    "Cable Fly",
+    "Push Ups",
+    "Chest Dips"
+  ],
+
+  "back": [
+    "Lat Pulldown",
+    "Pull Ups",
+    "Deadlift",
+    "Barbell Row",
+    "Cable Row",
+    "Seated Row",
+    "T-Bar Row",
+    "Face Pull",
+    "Press Ups"
+  ],
+
+  "legs": [
+    "Squat",
+    "Front Squat",
+    "Leg Press",
+    "Lunges",
+    "Romanian Deadlift",
+    "Leg Extension",
+    "Leg Curl",
+    "Calf Raise"
+  ],
+
+  "shoulders": [
+    "Shoulder Press",
+    "Overhead Press",
+    "Lateral Raise",
+    "Front Raise",
+    "Rear Delt Fly",
+    "Arnold Press",
+    "Press Ups"
+  ],
+
+  "arms": [
+    "Bicep Curl",
+    "Hammer Curl",
+    "Preacher Curl",
+    "Tricep Pushdown",
+    "Tricep Dips",
+    "Skull Crushers",
+    "Close Grip Bench Press"
+  ],
+
+  "core": [
+    "Sit Ups",
+    "Crunches",
+    "Plank",
+    "Russian Twist",
+    "Leg Raises",
+    "Hanging Knee Raises"
+  ]
+}
