@@ -2,6 +2,9 @@ import json
 import matplotlib.pyplot as plt
 from models import Workout, Exercises  
 from collections import Counter
+import os
+import sys
+
 
 
 class GymTracker:
@@ -266,16 +269,32 @@ class GymTracker:
         self.exercise_db = self.load_exercise_database()
         return output
 
-    def load_exercise_database(self):
-        try:
-            with open("exercise_database.json", "r") as f:
-                return json.load(f)
-        except FileNotFoundError:
-            data = {"exercises" : []}
-            with open ("exercise_database.json", "w ") as file:
-                json.dump(data, file, indent=4) 
-            
-            return data
+    class Storage:
+        def __init__(self):
+            self.db_path = self.get_db_path()
+            self.exercise_db = self.load_exercise_database()
+
+        def get_db_path(self):
+            # Handle PyInstaller _MEIPASS folder or normal folder
+            if getattr(sys, 'frozen', False):
+                # Running as EXE
+                base_path = os.path.dirname(sys.executable)
+            else:
+                # Running as Python script
+                base_path = os.path.dirname(os.path.abspath(__file__))
+            return os.path.join(base_path, "exercise_database.json")
+
+        def load_exercise_database(self):
+            try:
+                with open(self.db_path, "r") as file:
+                    data = json.load(file)
+                    return data
+            except FileNotFoundError:
+                # File doesn't exist → create empty DB
+                data = {"exercises": []}
+                with open(self.db_path, "w") as file:  # <-- make sure mode is 'w', no space
+                    json.dump(data, file, indent=4)
+                return data
 
     def get_muscle_group(self, exercise_name):
         for muscle, exercises in self.exercise_db.items():
