@@ -84,7 +84,7 @@ def open_add_workout_window():
 
         prs = tracker.check_pr(current_workout)
         tracker.add_workout(current_workout)
-        tracker.saveToFile()
+        tracker.save_to_file()
         refresh_exercises()
 
         if prs:
