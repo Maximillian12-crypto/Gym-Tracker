@@ -1,10 +1,9 @@
 import json
 import matplotlib.pyplot as plt
-from models import Workout, Exercises  
+from models import Workout, Exercises
 from collections import Counter
 import os
 import sys
-
 
 
 class GymTracker:
@@ -12,81 +11,71 @@ class GymTracker:
         self.workouts = []
         self.exercise_db = self.load_exercise_database()
 
-    def add_workout(self, workout = None):
-        self.workouts.append(workout)
+    def add_workout(self, workout=None):
+        """Add a workout to the tracker."""
+        if workout:
+            self.workouts.append(workout)
 
-    def saveToFile(self, filename="data.json"):
+    def save_to_file(self, filename="data.json"):
+        """Save all workouts to a JSON file."""
         with open(filename, "w") as f:
             json.dump([w.to_dict() for w in self.workouts], f, indent=4)
 
     def load_from_file(self, filename="data.json"):
+        """Load workouts from a JSON file."""
         try:
             with open(filename, "r") as f:
                 data = json.load(f)
-
                 for workout_data in data:
                     workout = Workout(workout_data["date"])
-
                     for ex_data in workout_data["exercises"]:
                         exercise = Exercises(
                             ex_data["name"],
-                           int (ex_data["sets"]),
-                           int (ex_data["reps"]),
-                           float(ex_data["weight"])
+                            int(ex_data["sets"]),
+                            int(ex_data["reps"]),
+                            float(ex_data["weight"])
                         )
                         workout.add_exercise(exercise)
-
                     self.workouts.append(workout)
-
-            output = "Data loaded successfully."
-            return output
-
+            return "Data loaded successfully."
         except FileNotFoundError:
-            output = "No previous data found."
-            return output
-
+            return "No previous data found."
 
     def check_pr(self, new_workout):
-     pr_messages = []
+        """Check for personal records in a new workout."""
+        pr_messages = []
+        for new_ex in new_workout.exercises:
+            previous_best = 0
+            for workout in self.workouts:
+                for ex in workout.exercises:
+                    if ex.name.strip().lower() == new_ex.name.strip().lower():
+                        if ex.weight > previous_best:
+                            previous_best = ex.weight
 
-     for new_ex in new_workout.exercises:
-        previous_best = 0
-
-        for workout in self.workouts:
-            for ex in workout.exercises:
-                if ex.name.strip().lower() == new_ex.name.strip().lower():
-                    if ex.weight > previous_best:
-                        previous_best = ex.weight
-
-       
-        if new_ex.weight > previous_best:
-            pr_messages.append(
-                f"🔥 New PR for {new_ex.name}! Previous: {previous_best} kg | New: {new_ex.weight} kg"
-            )
-
-     return pr_messages   
+            if new_ex.weight > previous_best:
+                pr_messages.append(
+                    f"🔥 New PR for {new_ex.name}! Previous: {previous_best} kg | New: {new_ex.weight} kg"
+                )
+        return pr_messages
 
     def show_exercise_history(self, exercise_name):
+        """Display history for a specific exercise."""
         found = False
-        # 1. Initialize an empty string to hold all history lines
         full_output = f"--- History for {exercise_name} ---\n"
-        
+
         for workout in self.workouts:
             for ex in workout.exercises:
                 if ex.name.strip().lower() == exercise_name.strip().lower():
                     volume = ex.calculate_volume()
-                    # 2. Use += to APPEND each new line to the string
-                    full_output += f"{workout.date} --> Weight:{ex.weight} || {ex.sets} x {ex.reps} --> Volume: {volume}\n"
+                    full_output += f"{workout.date} --> Weight: {ex.weight} || {ex.sets} x {ex.reps} --> Volume: {volume}\n"
                     found = True
 
-        # 3. Only return AFTER the loops are completely finished
         if not found:
             return f"No history found for '{exercise_name}'"
-            
-        return full_output          
-
+        return full_output
 
     def detect_plateau(self, exercise_name):
+        """Detect if an exercise has plateaued over the last 3 sessions."""
         history = []
         for workout in self.workouts:
             for exercise in workout.exercises:
@@ -94,246 +83,209 @@ class GymTracker:
                     history.append(exercise)
 
         if len(history) < 3:
-            return None 
+            return None
 
         last_three = history[-3:]
         first = last_three[0]
-        plateau = True 
+        plateau = True
 
         for ex in last_three[1:]:
-            # If any workout has a higher weight than the first one, it's not a plateau
-            if ex.weight > first.weight: 
+            if ex.weight > first.weight:
                 plateau = False
-                break  # We can stop checking once we find an increase
+                break
 
-        # --- MOVED OUTSIDE THE LOOP ---
         if plateau:
             return f"⚠️ {exercise_name} has plateaued for 3 sessions."
-        
         return None
 
-
     def analyze_progress(self, exercise_name):
-        history=[]
-
+        """Analyze progress trend for an exercise."""
+        history = []
         for workout in self.workouts:
             for ex in workout.exercises:
-             if ex.name.strip().lower() == exercise_name.strip().lower():
-                history.append(ex)
+                if ex.name.strip().lower() == exercise_name.strip().lower():
+                    history.append(ex)
 
         if len(history) < 3:
             return None
 
-        last_three = history [-3:]
-         
-        w1 = last_three[0].weight
-        w2 = last_three[1].weight
-        w3 = last_three[2].weight
+        last_three = history[-3:]
+        w1, w2, w3 = last_three[0].weight, last_three[1].weight, last_three[2].weight
 
         if w1 < w2 < w3:
-            return f"{exercise_name} -> 📈 Improving" 
+            return f"{exercise_name} -> 📈 Improving"
         elif w1 == w2 == w3:
-            return f"{exercise_name} ->  ⚠️ Plateau"
+            return f"{exercise_name} -> ⚠️ Plateau"
         elif w1 > w2 > w3:
             return f"{exercise_name} -> 📉 Regressing"
         else:
             return f"{exercise_name} -> Mixed Progress"
-    
-
 
     def exercise_stats(self, exercise_name):
-        volumes=[]
-        weights=[]
-        session_count= 0
+        """Get statistics for a specific exercise."""
+        volumes = []
+        weights = []
+        session_count = 0
 
         for workout in self.workouts:
             for ex in workout.exercises:
                 if ex.name.strip().lower() == exercise_name.strip().lower():
-                    session_count +=1 
+                    session_count += 1
                     weights.append(ex.weight)
                     volumes.append(ex.calculate_volume())
 
         if session_count == 0:
-            print("No data found for that exercise")
-            return
+            return "No data found for that exercise"
 
-        best_weight=max(weights)
-        avg_weight= sum(weights) / len(weights)
-        total_volume= sum(volumes)
+        best_weight = max(weights)
+        avg_weight = sum(weights) / len(weights)
+        total_volume = sum(volumes)
 
-        output = f"\n Exercise Statistics for {exercise_name}\n"
-        output += "-"*30
+        output = f"\nExercise Statistics for {exercise_name}\n"
+        output += "-" * 30
         output += f"\nTotal sessions: {session_count}\n"
         output += f"Best weight: {best_weight} kg\n"
-        output += f"Average weight: {avg_weight:.2f} kg\n"  
+        output += f"Average weight: {avg_weight:.2f} kg\n"
         output += f"Total volume lifted: {total_volume} kg\n"
-        return output          
-
+        return output
 
     def strongest_exercise(self):
-        best_lifts={}
-
+        """Find the strongest exercises based on max weight."""
+        best_lifts = {}
         for workout in self.workouts:
             for ex in workout.exercises:
-                name=ex.name.strip().lower()
-                weight= float(ex.weight)
-                if name not in best_lifts:
-                    best_lifts[name]= weight
-                else:
-                    if weight > best_lifts[name]:
-                        best_lifts[name] = weight
+                name = ex.name.strip().lower()
+                weight = float(ex.weight)
+                if name not in best_lifts or weight > best_lifts[name]:
+                    best_lifts[name] = weight
 
         if not best_lifts:
-            output += "No wrorkout data available"
-            return output
-        
-        sorted_lifts=sorted(best_lifts.items(), key=lambda x: x[1], reverse=True)
+            return "No workout data available"
 
-        output +="Strongest exercises"
-        output +="-" *30
+        sorted_lifts = sorted(best_lifts.items(), key=lambda x: x[1], reverse=True)
 
-        for i ,(exercise,weight) in enumerate (sorted_lifts[:5], start=1):
-            output += f"{i}. {exercise.title()} --> {weight} kg"   
-            return output       
-
-
+        output = "Strongest exercises\n"
+        output += "-" * 30 + "\n"
+        for i, (exercise, weight) in enumerate(sorted_lifts[:5], start=1):
+            output += f"{i}. {exercise.title()} --> {weight} kg\n"
+        return output
 
     def workout_summary_by_date(self, date):
+        """Get summary for a specific workout date."""
         for workout in self.workouts:
             if workout.date == date:
-                output +=f"Workout summary - {workout.date}"
-                output +="-"*40
-
+                output = f"Workout summary - {workout.date}\n"
+                output += "-" * 40 + "\n"
                 total_volume = 0
 
                 for ex in workout.exercises:
                     volume = ex.calculate_volume()
-
                     total_volume += volume
-                    output +=f"{ex.name.title()}  {ex.sets} x {ex.reps} @ {ex.weight} kg" 
-                output+= f"Total volume lifted: ", total_volume, "kg" 
+                    output += f"{ex.name.title()} {ex.sets} x {ex.reps} @ {ex.weight} kg\n"
+                output += f"Total volume lifted: {total_volume} kg\n"
                 return output
 
-        output += "No workout found for that date"
-        return output      
-
+        return "No workout found for that date"
 
     def dashboard(self):
-        total_workouts= len(self.workouts)
-        total_exercises=0
-        total_volume=0
-        exercise_count={}
+        """Display overall workout statistics."""
+        total_workouts = len(self.workouts)
+        total_exercises = 0
+        total_volume = 0
+        exercise_count = {}
 
         for workout in self.workouts:
             for ex in workout.exercises:
-                total_exercises +=1
+                total_exercises += 1
                 total_volume += ex.sets * ex.reps * ex.weight
                 name = ex.name
+                exercise_count[name] = exercise_count.get(name, 0) + 1
 
-                if name not in exercise_count:
-                    exercise_count[name] =0
-                exercise_count[name] +=1 
+        most_performed = max(exercise_count, key=exercise_count.get) if exercise_count else "None"
 
-        if exercise_count:
-            most_performed= max(exercise_count, key=exercise_count.get)
-
-        else:
-            most_performed= "None"
-
-        output = "\n=============DASHBOARD=================\n"
+        output = "\n============= DASHBOARD =================\n"
         output += f"\nTotal workouts logged: {total_workouts}\n"
-        output +=f"\nTotal Exercises performed: {total_exercises}\n"
-        output +=f"\nTotal volume lifted: {total_volume} KG\n"
-        output += f"\nMost performed exercise: {most_performed}\n"
-        output += "\n==============================\n"                  
-        
+        output += f"Total Exercises performed: {total_exercises}\n"
+        output += f"Total volume lifted: {total_volume} KG\n"
+        output += f"Most performed exercise: {most_performed}\n"
+        output += "\n========================================\n"
         return output
-
-
 
     def training_frequency(self):
-
+        """Display frequency of each exercise."""
         all_exercises = [ex.name for workout in self.workouts for ex in workout.exercises]
-
         exercise_count = Counter(all_exercises)
 
-        output +="\n======= TRAINING FREQUENCY ======="
+        if not exercise_count:
+            return "No workout data available"
 
+        output = "\n======= TRAINING FREQUENCY =======\n"
         for name, count in exercise_count.items():
-            output += f"{name} : {count} sessions"
-            return output
-
-        output +="\n===============================\n"
-        
-    
-        self.exercise_db = self.load_exercise_database()
+            output += f"{name}: {count} sessions\n"
+        output += "=================================\n"
         return output
 
-    class Storage:
-        def __init__(self):
-            self.db_path = self.get_db_path()
-            self.exercise_db = self.load_exercise_database()
+    def get_db_path(self):
+        """Get the path to the exercise database file."""
+        if getattr(sys, 'frozen', False):
+            base_path = os.path.dirname(sys.executable)
+        else:
+            base_path = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base_path, "exercise_database.json")
 
-        def get_db_path(self):
-            # Handle PyInstaller _MEIPASS folder or normal folder
-            if getattr(sys, 'frozen', False):
-                # Running as EXE
-                base_path = os.path.dirname(sys.executable)
-            else:
-                # Running as Python script
-                base_path = os.path.dirname(os.path.abspath(__file__))
-            return os.path.join(base_path, "exercise_database.json")
-
-        def load_exercise_database(self):
-            try:
-                with open(self.db_path, "r") as file:
-                    data = json.load(file)
-                    return data
-            except FileNotFoundError:
-                # File doesn't exist → create empty DB
-                data = {"exercises": []}
-                with open(self.db_path, "w") as file:  # <-- make sure mode is 'w', no space
-                    json.dump(data, file, indent=4)
-                return data
+    def load_exercise_database(self):
+        """Load the exercise database from file."""
+        db_path = self.get_db_path()
+        try:
+            with open(db_path, "r") as file:
+                return json.load(file)
+        except FileNotFoundError:
+            data = {"exercises": []}
+            with open(db_path, "w") as file:
+                json.dump(data, file, indent=4)
+            return data
 
     def get_muscle_group(self, exercise_name):
+        """Get the muscle group for a given exercise."""
+        if not hasattr(self, 'exercise_db') or not self.exercise_db:
+            return "Unknown"
         for muscle, exercises in self.exercise_db.items():
-             if exercise_name.lower() in [e.lower() for e in exercises]:
-                 return muscle
-             
+            if exercise_name.lower() in [e.lower() for e in exercises]:
+                return muscle
+        return "Unknown"
 
     def muscle_balance(self):
-        muscle_counter =Counter()
+        """Analyze muscle group balance in training."""
+        muscle_counter = Counter()
         for workout in self.workouts:
             for ex in workout.exercises:
-                muscle =   self.get_muscle_group(ex.name)
-                label = muscle if muscle else "unknown"
-                muscle_counter[label] += 1
+                muscle = self.get_muscle_group(ex.name)
+                muscle_counter[muscle] += 1
 
-        output ="\n========MUSCLE BALANCE ANALYSIS=======\n"
+        if not muscle_counter:
+            return "No workout data available for muscle balance analysis"
+
+        output = "\n======== MUSCLE BALANCE ANALYSIS =======\n"
         for muscle, count in muscle_counter.items():
-            output+=f"{muscle.capitalize()} : {count} exercises"
+            output += f"{muscle.capitalize()}: {count} exercises\n"
 
-        if "legs" in muscle_counter and muscle_counter["legs"] < muscle_counter["chest"]:
-            output+="\n⚠ Legs appear undertrained."
+        if "Legs" in muscle_counter and muscle_counter["Legs"] < muscle_counter.get("Chest", 0):
+            output += "\n⚠ Legs appear undertrained.\n"
+        if "Back" in muscle_counter and muscle_counter["Back"] < muscle_counter.get("Chest", 0):
+            output += "⚠ Back training appears low.\n"
 
-        if "back" in muscle_counter and muscle_counter["back"] < muscle_counter["chest"]:
-            output+="⚠ Back training appears low."
-
-        output +="\n=====================================\n"
+        output += "========================================\n"
         return output
 
-
     def plot_exercise_frequency(self):
-        # FIX: We need to count names from WORKOUTS, not the database
+        """Plot exercise frequency as a bar chart."""
         all_exercise_names = [ex.name for workout in self.workouts for ex in workout.exercises]
-        
+
         if not all_exercise_names:
             print("No data to plot!")
             return
 
-        exercise_count = Counter(all_exercise_names)    
-
+        exercise_count = Counter(all_exercise_names)
         names = list(exercise_count.keys())
         counts = list(exercise_count.values())
 
@@ -347,16 +299,13 @@ class GymTracker:
         plt.show()
 
     def plot_muscle_distribution(self):
+        """Plot muscle group distribution as a pie chart."""
         muscle_counter = Counter()
-
         for workout in self.workouts:
-            # FIX: changed self.exercise to workout.exercises
             for ex in workout.exercises:
                 muscle = self.get_muscle_group(ex.name)
-                # Handle cases where muscle might be None if not in DB
-                label = muscle if muscle else "Unknown"
-                muscle_counter[label] += 1
-                
+                muscle_counter[muscle] += 1
+
         if not muscle_counter:
             print("No muscle data to plot!")
             return
@@ -369,35 +318,29 @@ class GymTracker:
         plt.title("Muscle Group Distribution")
         plt.show()
 
-
     def recommend_workout(self):
-        from collections import Counter    
+        """Recommend exercises based on training balance."""
         muscle_counter = Counter()
-
         for workout in self.workouts:
             for ex in workout.exercises:
-                muscle=  self.get_muscle_group(ex.name)
+                muscle = self.get_muscle_group(ex.name)
                 muscle_counter[muscle] += 1
 
         if not muscle_counter:
-            output+="No wrokout data available"
-            return output
+            return "No workout data available for recommendations"
 
-        weakest_muscle= min(muscle_counter, key=muscle_counter.get)
+        weakest_muscle = min(muscle_counter, key=muscle_counter.get)
 
-        output="\n============= WORKOUT RECOMMENDATION================\n"
-        output +=f"Focus: {weakest_muscle.capitalize()} (undertrained)\n"
+        output = "\n============= WORKOUT RECOMMENDATION ================\n"
+        output += f"Focus: {weakest_muscle.capitalize()} (undertrained)\n"
 
-        exercises = self.exercise_db.get( weakest_muscle, [])
-        
-
+        exercises = self.exercise_db.get(weakest_muscle, [])
         if exercises:
-            output+="Suggested Exercises: "
-            for ex in exercises[:5] :
-                output+=f"-{ex}"  
-
+            output += "Suggested Exercises:\n"
+            for ex in exercises[:5]:
+                output += f"  - {ex}\n"
         else:
-            output+="No exercises found for this muscle group"  
+            output += "No exercises found for this muscle group\n"
 
-        output+="===================================="
-        return output               
+        output += "===================================================\n"
+        return output
