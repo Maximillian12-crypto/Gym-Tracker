@@ -1,64 +1,51 @@
 {
-  "chest": [
-    "Bench Press",
-    "Incline Bench Press",
-    "Decline Bench Press",
-    "Dumbbell Bench Press",
-    "Chest Fly",
-    "Cable Fly",
-    "Push Ups",
-    "Chest Dips"
-  ],
+  "Bench Press": "Chest",
+  "Incline Bench Press": "Chest",
+  "Decline Bench Press": "Chest",
+  "Dumbbell Bench Press": "Chest",
+  "Chest Fly": "Chest",
+  "Cable Fly": "Chest",
+  "Push Ups": "Chest",
+  "Chest Dips": "Chest",
 
-  "back": [
-    "Lat Pulldown",
-    "Pull Ups",
-    "Deadlift",
-    "Barbell Row",
-    "Cable Row",
-    "Seated Row",
-    "T-Bar Row",
-    "Face Pull",
-    "Press Ups"
-  ],
+  "Lat Pulldown": "Back",
+  "Pull Ups": "Back",
+  "Deadlift": "Back",
+  "Barbell Row": "Back",
+  "Cable Row": "Back",
+  "Seated Row": "Back",
+  "T-Bar Row": "Back",
+  "Face Pull": "Back",
+  "Press Ups": "Back",
 
-  "legs": [
-    "Squat",
-    "Front Squat",
-    "Leg Press",
-    "Lunges",
-    "Romanian Deadlift",
-    "Leg Extension",
-    "Leg Curl",
-    "Calf Raise"
-  ],
+  "Squat": "Legs",
+  "Front Squat": "Legs",
+  "Leg Press": "Legs",
+  "Lunges": "Legs",
+  "Romanian Deadlift": "Legs",
+  "Leg Extension": "Legs",
+  "Leg Curl": "Legs",
+  "Calf Raise": "Legs",
 
-  "shoulders": [
-    "Shoulder Press",
-    "Overhead Press",
-    "Lateral Raise",
-    "Front Raise",
-    "Rear Delt Fly",
-    "Arnold Press",
-    "Press Ups"
-  ],
+  "Shoulder Press": "Shoulders",
+  "Overhead Press": "Shoulders",
+  "Lateral Raise": "Shoulders",
+  "Front Raise": "Shoulders",
+  "Rear Delt Fly": "Shoulders",
+  "Arnold Press": "Shoulders",
 
-  "arms": [
-    "Bicep Curl",
-    "Hammer Curl",
-    "Preacher Curl",
-    "Tricep Pushdown",
-    "Tricep Dips",
-    "Skull Crushers",
-    "Close Grip Bench Press"
-  ],
+  "Bicep Curl": "Arms",
+  "Hammer Curl": "Arms",
+  "Preacher Curl": "Arms",
+  "Tricep Pushdown": "Arms",
+  "Tricep Dips": "Arms",
+  "Skull Crushers": "Arms",
+  "Close Grip Bench Press": "Arms",
 
-  "core": [
-    "Sit Ups",
-    "Crunches",
-    "Plank",
-    "Russian Twist",
-    "Leg Raises",
-    "Hanging Knee Raises"
-  ]
+  "Sit Ups": "Core",
+  "Crunches": "Core",
+  "Plank": "Core",
+  "Russian Twist": "Core",
+  "Leg Raises": "Core",
+  "Hanging Knee Raises": "Core"
 }

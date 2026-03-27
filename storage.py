@@ -246,13 +246,8 @@ class GymTracker:
             return data
 
     def get_muscle_group(self, exercise_name):
-        """Get the muscle group for a given exercise."""
-        if not hasattr(self, 'exercise_db') or not self.exercise_db:
-            return "Unknown"
-        for muscle, exercises in self.exercise_db.items():
-            if exercise_name.lower().strip() in [e.lower().strip() for e in exercises]:
-                return muscle
-        return "Unknown"
+        name = exercise_name.strip().title()
+        return self.exercise_db.get(name, "Unknown")
 
     def muscle_balance(self):
         """Analyze muscle group balance in training."""
