@@ -234,20 +234,27 @@ class GymTracker:
         return os.path.join(base_path, "exercise_database.json")
 
     def load_exercise_database(self):
-        """Load the exercise database from file."""
-        db_path = self.get_db_path()
         try:
-            with open(db_path, "r") as file:
-                return json.load(file)
-        except FileNotFoundError:
-            data = {"exercises": []}
-            with open(db_path, "w") as file:
-                json.dump(data, file, indent=4)
-            return data
+            current_dir = os.path.dirname(__file__)
+            db_path = os.path.join(current_dir, "exercise_database.json")
+
+            with open(db_path, "r") as f:
+                data = json.load(f)
+
+            # Normalize everything to lowercase keys
+            normalized = {}
+            for muscle, exercises in data.items():
+                for ex in exercises:
+                    normalized[ex.strip().lower()] = muscle.lower()
+
+            return normalized  # now { "bench press": "chest" }
+
+        except:
+            return {}
 
     def get_muscle_group(self, exercise_name):
-        name = exercise_name.strip().title()
-        return self.exercise_db.get(name, "Unknown")
+        key = exercise_name.strip().lower()
+        return self.exercise_db.get(key, "Unknown")
 
     def muscle_balance(self):
         """Analyze muscle group balance in training."""
